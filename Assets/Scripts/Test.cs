@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Test : MonoBehaviour
 {
@@ -7,8 +6,7 @@ public class Test : MonoBehaviour
 
     private void Start()
     {
-        ship = new Ship(100, 0, 100);
-        ship.TakeDamage(100);
-        
+        ship = new Ship(0, 100);
+        ship.TakeDamage(220);
     }
 }
