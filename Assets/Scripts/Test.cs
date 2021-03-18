@@ -6,7 +6,7 @@ public class Test : MonoBehaviour
 
     private void Start()
     {
-        ship = new Ship(0, 100);
+        ship = new Ship(0, 100, 5,3);
         ship.TakeDamage(220);
     }
 }
