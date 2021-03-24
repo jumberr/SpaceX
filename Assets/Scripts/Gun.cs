@@ -1,6 +1,6 @@
-using GunType = IGun.GunType;
-
-public class Gun : IGun
+using TypeOfBoost = Bullet.TypeOfBoost;
+using TypeOfShells = Bullet.TypeOfShells;
+public class Gun : Item
 {
     private GunType typeOfGun;
     private Bullet bullet;
@@ -12,9 +12,16 @@ public class Gun : IGun
     public float MagazineSize { get; set; }
     public float ReloadTime { get; set; }
 
-    public Gun(GunType typeOfGun, IBullet.TypeOfBoost boostType, IBullet.TypeOfShells shellsType)
+    public enum GunType
+    {
+        MachineGun,
+        PlasmaCannon
+    }
+    
+    public Gun(float weight, GunType typeOfGun, TypeOfBoost boostType, TypeOfShells shellsType)
     {
         this.typeOfGun = typeOfGun;
+        Weight = weight;
         bullet = new Bullet(boostType, shellsType);
         LoadGunStats();
         ApplyBulletMultipliers(bullet);

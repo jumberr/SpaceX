@@ -1,40 +1,48 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using TypeSlotEnum = ISlot.TypeSlotEnum;
+using GunType = Gun.GunType;
+using TypeOfBoost = Bullet.TypeOfBoost;
+using TypeOfShells = Bullet.TypeOfShells;
 
 public class Ship : Health
 {
     //Should have gun class, slots class, equipment
-    private int numberOfSlots;
-    private Slot[] slots;
-    private int numberOfComboSlots;
-    private ComboSlot[] comboSlots;
+    private readonly int numberOfSlots;
+    private readonly Slot[] slots;
 
-    public Ship(float minHealth, float maxHealth, int numberOfSlots, int numberOfComboSlots)
+    public Slot[] Slots => slots;
+
+    public Ship(float minHealth, float maxHealth, int numberOfSlots, TypeSlotEnum[] slotType, Item[] items)
     {
         MinHealth = minHealth;
         MaxHealth = maxHealth;
         CurrentHealth = MaxHealth;
         
         this.numberOfSlots = numberOfSlots;
-        if (numberOfComboSlots > 0)
+        if (numberOfSlots > 0)
         {
             slots = new Slot [numberOfSlots];
             for (var i = 0; i < numberOfSlots; i++)
             {
-                slots[i] = new Slot(ISlot.TypeSlotEnum.Light, new Gun(IGun.GunType.MachineGun, IBullet.TypeOfBoost.Boosted, IBullet.TypeOfShells.Bullet));
+                slots[i] = new Slot(slotType[i], items[i]);
             }
         }
         else
             Debug.Log($"Slots wasn't initialized, because number of slots {numberOfSlots}");
 
-        this.numberOfComboSlots = numberOfComboSlots;
-        if (numberOfComboSlots > 0)
-            comboSlots = new ComboSlot[numberOfComboSlots];
-        else
-            Debug.Log($"Combo slots wasn't initialized, because number of combo slots {numberOfComboSlots}");
         // Add slots types and guns
         
         Debug.Log(GetType().Name + " initialized");
+    }
+
+    public void GetInfoAboutSlots()
+    {
+        for (var i = 0; i < Slots.Length; i++)
+        {
+            Debug.Log($"Gun {i} is: "+ Slots[i].Item + "\n");
+            Debug.Log($"Type Slots {i} is: "+ Slots[i].TypeSlot + "\n");
+
+        }
     }
 
     private void InitializeSlot(int numberOfSlots)

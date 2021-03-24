@@ -1,12 +1,23 @@
-using TypeOfBoost = IBullet.TypeOfBoost;
-using TypeOfShells = IBullet.TypeOfShells;
-public class Bullet : IBullet
+
+public class Bullet
 {
     private TypeOfBoost boostType;
     private TypeOfShells shellsType;
     
     // here should be different multipliers for stats, depending on type of boosts
     private float damageMultiplier;
+    
+    public enum TypeOfShells
+    {
+        Bullet,
+        Plasma
+    }
+    
+    public enum TypeOfBoost
+    {
+        Default,
+        Boosted
+    }
     
     public TypeOfBoost TypeBoost => boostType;
     public TypeOfShells TypeShells => shellsType;
