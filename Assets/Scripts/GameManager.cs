@@ -1,15 +1,18 @@
 using System;
+using Classes.BulletClass;
+using Classes.GunClass;
+using Classes.ItemClass;
+using Classes.ShipClass;
 using Unity.Collections;
 using UnityEngine;
-using TypeSlotEnum = ISlot.TypeSlotEnum;
-using GunType = Gun.GunType;
-using TypeOfBoost = Bullet.TypeOfBoost;
-using TypeOfShells = Bullet.TypeOfShells;
-using TypeItem = Item.TypeItem;
-using TypeOfEquipment = Equipment.TypeOfEquipment;
-using TypeShield = Shield.TypeShield;
-using TypeHpRegenerator = HpRegenerator.TypeHpRegenerator;
-using TypeEngine = Engine.TypeEngine;
+using TypeSlotEnum = Classes.SlotClass.ISlot.TypeSlotEnum;
+using GunType = Classes.GunClass.Gun.GunType;
+using TypeOfBoost = Classes.BulletClass.Ammo.TypeOfBoost;
+//using TypeOfShells = Classes.BulletClass.Ammo.TypeOfShells;
+using TypeItem = Classes.ItemClass.Item.TypeItem;
+using TypeShield = Classes.EquipmentClass.Shield.TypeShield;
+using TypeHpRegenerator = Classes.EquipmentClass.HpRegenerator.TypeHpRegenerator;
+using TypeEngine = Classes.EquipmentClass.Engine.TypeEngine;
 
 public class GameManager : MonoBehaviour
 {
@@ -19,21 +22,21 @@ public class GameManager : MonoBehaviour
     public float maxHealth;
     public int numberOfSlots;
 
-    public TypeSlotEnum[] slotType;
+    private TypeSlotEnum[] slotType;
 
-    public GunType[][] gunType;
-    public TypeOfBoost[][] boostType;
-    public TypeOfShells[][] shellsType;
+    private GunType[][] gunType;
+    private TypeOfBoost[][] boostType;
+    //private TypeOfShells[][] shellsType;
 
-    public TypeShield[][] typeShield;
+    private TypeShield[][] typeShield;
 
-    public TypeHpRegenerator[][] typeHpRegenerator;
+    private TypeHpRegenerator[][] typeHpRegenerator;
 
-    public TypeEngine[][] typeEngine;
+    private TypeEngine[][] typeEngine;
     
-    public TypeItem[] typeItem;
+    private TypeItem[] typeItem;
     //public TypeOfEquipment[] typeOfEquipment;
-    public float[] weight;
+    private float[] weight;
     
     
     public Item[] Items { get; set; }
@@ -44,7 +47,7 @@ public class GameManager : MonoBehaviour
         //createdShip = new Ship(minHealth, maxHealth, numberOfSlots, slotType, gunType, boostType, shellsType);
         createdShip = new Ship(minHealth, maxHealth, numberOfSlots, slotType, Items);
     
-        createdShip.GetInfoAboutSlots();
+        //createdShip.GetInfoAboutSlots();
     }
     
     public void Reset()
@@ -52,27 +55,19 @@ public class GameManager : MonoBehaviour
         numberOfSlots = 0;
         //ApplySlotChanges(numberOfSlots);
     }
-    
-    // public void ApplySlotChanges(int slotsAmount)
+
+    // private void Awake()
     // {
-    //     numberOfSlots = slotsAmount;
-    //     Array.Resize(ref boostType, slotsAmount);
-    //     Array.Resize(ref gunType, slotsAmount);
-    //     Array.Resize(ref shellsType, slotsAmount);
-    //     Array.Resize(ref slotType, slotsAmount);
+    //     if (MachineGun.TryCreate(21, GunType.MachineGun, TypeOfBoost.Boosted, new Ammo.Bullet(),
+    //         out MachineGun machineGun))
+    //     {
+    //         Debug.Log("Evrika " + machineGun);
+    //     }
     //     
-    //     Array.Resize(ref typeShield, slotsAmount);
-    //     Array.Resize(ref typeHpRegenerator, slotsAmount);
-    //     Array.Resize(ref typeEngine, slotsAmount);
-    //     Array.Resize(ref typeItem, slotsAmount);
-    //     //Array.Resize(ref typeOfEquipment, slotsAmount);
-    //     Array.Resize(ref weight, slotsAmount);
-    //     
-    //     
-    //     //boostType = new TypeOfBoost[numberOfSlots][];
-    //     // for (var i = 0; i < numberOfSlots; i++) {
-    //     //     option[i] = new options[1];
-    //     // }
-    //     
+    //     if (MachineGun.TryCreate(21, GunType.MachineGun, TypeOfBoost.Boosted, new Ammo.Plasma(),
+    //         out MachineGun machineGun3))
+    //     {
+    //         Debug.Log("KRAH " + machineGun3);
+    //     }
     // }
 }

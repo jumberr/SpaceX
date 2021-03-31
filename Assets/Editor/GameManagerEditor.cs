@@ -1,7 +1,20 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Classes;
+using Classes.EquipmentClass;
+using Classes.GunClass;
+using Classes.ItemClass;
 using UnityEditor;
-using UnityEditor.AnimatedValues;
 using UnityEngine;
+using TypeSlotEnum = Classes.SlotClass.ISlot.TypeSlotEnum;
+using GunType = Classes.GunClass.Gun.GunType;
+using TypeOfBoost = Classes.BulletClass.Ammo.TypeOfBoost;
+//using TypeOfShells = Classes.BulletClass.Ammo.TypeOfShells;
+using TypeShield = Classes.EquipmentClass.Shield.TypeShield;
+using TypeHpRegenerator = Classes.EquipmentClass.HpRegenerator.TypeHpRegenerator;
+using TypeEngine = Classes.EquipmentClass.Engine.TypeEngine;
 
 namespace Editor
 {
@@ -9,7 +22,7 @@ namespace Editor
     public class GameManagerEditor : UnityEditor.Editor
     {
         private GameManager gameManager;
-        
+
         private bool foldoutSlots;
 
         private SerializedProperty minHealth;
@@ -19,7 +32,7 @@ namespace Editor
 
         private SerializedProperty items;
 
-        private enum options
+        private enum Options
         {
             None,
             Gun,
@@ -27,23 +40,32 @@ namespace Editor
             HpRegenerator,
             Shield
         }
-        
-        private ISlot.TypeSlotEnum[] slotType;
-        private Gun.GunType[][] gunType;
-        private Bullet.TypeOfBoost[][] boostType;
-        private Bullet.TypeOfShells[][] shellsType;
 
-        private Shield.TypeShield[][] typeShield;
+        private TypeSlotEnum[] slotType;
+        private GunType[][] gunType;
+        private int[][] gunType1;
 
-        private HpRegenerator.TypeHpRegenerator[][] typeHpRegenerator;
+        private TypeOfBoost[][] boostType;
 
-        private Engine.TypeEngine[][] typeEngine;
-        
+        //private TypeOfShells[][] shellsType;
+        private int[][] shellsType1;
+
+        private TypeShield[][] typeShield;
+
+        private TypeHpRegenerator[][] typeHpRegenerator;
+
+        private TypeEngine[][] typeEngine;
 
         private float[] weight;
 
-        private options[][] option;
-        public int[] componentAmount;
+        private Options[][] option;
+
+        private List<Item> shipItems;
+
+        //private List<Type> gunTypes;
+        //private string[] gunTypesString;
+        private Dictionary<string, Type> gunTypeDict = new Dictionary<string, Type>();
+
         private void OnEnable()
         {
             gameManager = (GameManager) target;
@@ -56,9 +78,16 @@ namespace Editor
             if (gameManager.numberOfSlots >= 0)
             {
                 ChangeSizeExternalArray(gameManager.numberOfSlots);
-                ChangeSizeInternalArray(1);
+                for (var i = 0; i < option.Length; i++)
+                {
+                    ChangeSizeInternalArray(i, 1);
+                }
             }
+
+            GetInheritedClasses(typeof(Gun)).ToList().ForEach(x => gunTypeDict.Add(x.ToString(), x));
+            //gunTypesString = gunTypes.Select(type => type.ToString()).ToArray();
         }
+
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -74,7 +103,10 @@ namespace Editor
                 if (gameManager.numberOfSlots >= 0)
                 {
                     ChangeSizeExternalArray(gameManager.numberOfSlots);
-                    ChangeSizeInternalArray(1);
+                    for (var i = 0; i < option.Length; i++)
+                    {
+                        ChangeSizeInternalArray(i, 1);
+                    }
                 }
             }
 
@@ -92,62 +124,94 @@ namespace Editor
                     EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.LabelField("Slot type");
                     EditorGUI.indentLevel += 2;
-                    slotType[i] = (ISlot.TypeSlotEnum) EditorGUILayout.EnumPopup(slotType[i]);
+                    slotType[i] = (TypeSlotEnum) EditorGUILayout.EnumPopup(slotType[i]);
                     EditorGUI.indentLevel -= 2;
                     EditorGUILayout.EndHorizontal();
 
                     EditorGUILayout.LabelField("Content of slot");
                     EditorGUI.indentLevel += 2;
 
+                    var weightSlot = 0f;
                     for (var j = 0; j < option[i].Length; j++)
                     {
                         EditorGUILayout.BeginHorizontal();
                         EditorGUILayout.LabelField($"[{j}] Choose content:", EditorStyles.boldLabel);
-                        option[i][j] = (options) EditorGUILayout.EnumPopup(option[i][j]);
+                        option[i][j] = (Options) EditorGUILayout.EnumPopup(option[i][j]);
                         EditorGUILayout.EndHorizontal();
 
-                        if (option[i][j] == options.Gun)
+                        EditorGUI.indentLevel += 2;
+
+                        switch (option[i][j])
                         {
-                            EditorGUILayout.BeginHorizontal();
-                            EditorGUILayout.LabelField("Type Gun");
-                            gunType[i][j] = (Gun.GunType) EditorGUILayout.EnumPopup(gunType[i][j]);
-                            EditorGUILayout.EndHorizontal();
+                            case Options.Gun:
+                            {
+                                EditorGUILayout.BeginHorizontal();
+                                EditorGUILayout.LabelField("Type Gun");
 
-                            EditorGUILayout.BeginHorizontal();
-                            EditorGUILayout.LabelField("Type Boost (Bullet)");
-                            boostType[i][j] = (Bullet.TypeOfBoost) EditorGUILayout.EnumPopup(boostType[i][j]);
-                            EditorGUILayout.EndHorizontal();
 
-                            EditorGUILayout.BeginHorizontal();
-                            EditorGUILayout.LabelField("Type Shells (Bullet)");
-                            shellsType[i][j] = (Bullet.TypeOfShells) EditorGUILayout.EnumPopup(shellsType[i][j]);
-                            EditorGUILayout.EndHorizontal();
+                                gunType1[i][j] = EditorGUILayout.Popup(gunType1[i][j], gunTypeDict.Keys.ToArray());
+                                //gunType[i][j] = (GunType) EditorGUILayout.EnumPopup(gunType[i][j]);
+                                EditorGUILayout.EndHorizontal();
+
+                                EditorGUILayout.BeginHorizontal();
+                                EditorGUILayout.LabelField("Type Boost (Bullet)");
+                                boostType[i][j] = (TypeOfBoost) EditorGUILayout.EnumPopup(boostType[i][j]);
+                                EditorGUILayout.EndHorizontal();
+
+                                EditorGUILayout.BeginHorizontal();
+                                EditorGUILayout.LabelField("Type Shells (Bullet)");
+
+                                var type = gunTypeDict[gunTypeDict.Keys.ToList()[gunType1[i][j]]];
+                                Debug.Log("nameof(Gun.AvailableAmmoTypes): " + nameof(Gun.AvailableAmmoTypes));
+                                var listOfShells = InvokeMethodByTypeAndName<List<Type>>(type,
+                                    nameof(Gun.AvailableAmmoTypes), null, null);
+
+                                Debug.Log(listOfShells[0]);
+
+                                //shellsType[i][j] = (TypeOfShells) EditorGUILayout.EnumPopup(shellsType[i][j]);
+                                shellsType1[i][j] = EditorGUILayout.Popup(shellsType1[i][j],
+                                    listOfShells.Select(type => type.ToString()).ToArray());
+                                EditorGUILayout.EndHorizontal();
+
+                                weightSlot += ConstStats.GunWeight(gunType[i][j]);
+                                break;
+                            }
+                            case Options.Shield:
+                            {
+                                EditorGUILayout.BeginHorizontal();
+                                EditorGUILayout.LabelField("Type Shield");
+                                typeShield[i][j] = (TypeShield) EditorGUILayout.EnumPopup(typeShield[i][j]);
+                                EditorGUILayout.EndHorizontal();
+
+                                weightSlot += ConstStats.ShieldWeight(typeShield[i][j]);
+                                break;
+                            }
+                            case Options.Engine:
+                            {
+                                EditorGUILayout.BeginHorizontal();
+                                EditorGUILayout.LabelField("Type Engine");
+                                typeEngine[i][j] = (TypeEngine) EditorGUILayout.EnumPopup(typeEngine[i][j]);
+                                EditorGUILayout.EndHorizontal();
+
+                                weightSlot += ConstStats.EngineWeight(typeEngine[i][j]);
+                                break;
+                            }
+                            case Options.HpRegenerator:
+                            {
+                                EditorGUILayout.BeginHorizontal();
+                                EditorGUILayout.LabelField("Type HP Regenerator");
+                                typeHpRegenerator[i][j] =
+                                    (TypeHpRegenerator) EditorGUILayout.EnumPopup(typeHpRegenerator[i][j]);
+                                EditorGUILayout.EndHorizontal();
+
+                                weightSlot += ConstStats.HpRegeneratorWeight(typeHpRegenerator[i][j]);
+                                break;
+                            }
                         }
 
-                        if (option[i][j] == options.Shield)
-                        {
-                            EditorGUILayout.BeginHorizontal();
-                            EditorGUILayout.LabelField("Type Shield");
-                            typeShield[i][j] = (Shield.TypeShield) EditorGUILayout.EnumPopup(typeShield[i][j]);
-                            EditorGUILayout.EndHorizontal();
-                        }
+                        EditorGUI.indentLevel -= 2;
 
-                        if (option[i][j] == options.HpRegenerator)
-                        {
-                            EditorGUILayout.BeginHorizontal();
-                            EditorGUILayout.LabelField("Type HP Regenerator");
-                            typeHpRegenerator[i][j] =
-                                (HpRegenerator.TypeHpRegenerator) EditorGUILayout.EnumPopup(typeHpRegenerator[i][j]);
-                            EditorGUILayout.EndHorizontal();
-                        }
-
-                        if (option[i][j] == options.Engine)
-                        {
-                            EditorGUILayout.BeginHorizontal();
-                            EditorGUILayout.LabelField("Type Engine");
-                            typeEngine[i][j] = (Engine.TypeEngine) EditorGUILayout.EnumPopup(typeEngine[i][j]);
-                            EditorGUILayout.EndHorizontal();
-                        }
+                        weight[i] = weightSlot;
                     }
 
 
@@ -156,23 +220,22 @@ namespace Editor
                     GUILayout.FlexibleSpace();
                     if (GUILayout.Button("+", GUILayout.Width(30)))
                     {
-                        Debug.Log("+1");
-
                         var lenght = option[i].Length + 1;
-                        ChangeSizeInternalArray(lenght);
+                        ChangeSizeInternalArray(i, lenght);
                     }
+
                     if (GUILayout.Button("-", GUILayout.Width(30)))
                     {
-                        Debug.Log("-1");
-
                         var lenght = option[i].Length - 1;
-                        ChangeSizeInternalArray(lenght);
+                        if (lenght >= 0)
+                            ChangeSizeInternalArray(i, lenght);
                     }
+
                     GUILayout.FlexibleSpace();
                     GUILayout.EndHorizontal();
                     GUILayout.EndVertical();
-                    
-                    EditorGUILayout.LabelField($"Slot capacity: {0} / {ConstStats.SlotCapacity(slotType[i])}");
+
+                    EditorGUILayout.LabelField($"Slot capacity: {weight[i]} / {ConstStats.SlotCapacity(slotType[i])}");
 
                     EditorGUI.indentLevel -= 2;
 
@@ -184,13 +247,17 @@ namespace Editor
 
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Create Ship"))
+            {
+                CreateItems();
                 gameManager.CreateShip();
+            }
 
             if (GUILayout.Button("Reset"))
             {
                 gameManager.numberOfSlots = 0;
                 ChangeSizeExternalArray(gameManager.numberOfSlots);
             }
+
             EditorGUILayout.EndHorizontal();
 
             serializedObject.ApplyModifiedProperties();
@@ -198,28 +265,69 @@ namespace Editor
 
         private void ChangeSizeExternalArray(int size)
         {
-            
-            slotType = new ISlot.TypeSlotEnum[size];
-            option = new options[size][];
-            gunType = new Gun.GunType[size][];
-            boostType = new Bullet.TypeOfBoost[size][];
-            shellsType = new Bullet.TypeOfShells[size][];
-            typeShield = new Shield.TypeShield[size][];
-            typeHpRegenerator = new HpRegenerator.TypeHpRegenerator[size][];
-            typeEngine = new Engine.TypeEngine[size][];
+            gunType1 = new int[size][];
+            shellsType1 = new int[size][];
+            weight = new float[size];
+            slotType = new TypeSlotEnum[size];
+            option = new Options[size][];
+            gunType = new GunType[size][];
+            boostType = new TypeOfBoost[size][];
+            //shellsType = new TypeOfShells[size][];
+            typeShield = new TypeShield[size][];
+            typeHpRegenerator = new TypeHpRegenerator[size][];
+            typeEngine = new TypeEngine[size][];
+        }
+
+
+        private void ChangeSizeInternalArray(int i, int size)
+        {
+            gunType1[i] = new int[size];
+            shellsType1[i] = new int[size];
+            option[i] = new Options[size];
+            gunType[i] = new GunType[size];
+            boostType[i] = new TypeOfBoost[size];
+            //shellsType[i] = new TypeOfShells[size];
+            typeShield[i] = new TypeShield[size];
+            typeHpRegenerator[i] = new TypeHpRegenerator[size];
+            typeEngine[i] = new TypeEngine[size];
+        }
+
+        private IEnumerable<Type> GetInheritedClasses(Type myType)
+        {
+            return Assembly.GetAssembly(myType).GetTypes().Where(theType =>
+                theType.IsClass && !theType.IsAbstract && theType.IsSubclassOf(myType));
+        }
+
+        private void CreateItems()
+        {
+            // shipItems = new List<Item>();
+            // for (int i = 0; i < slotType.Length; i++)
+            // {
+            //     var tempItems = new List<Item>();
+            //     for (var j = 0; j < option[i].Length; j++)
+            //     {
+            //         Item item;
+            //         switch (option[i][j])
+            //         {
+            //             case Options.None:
+            //                 break;
+            //             case Options.Gun:
+            //                 break;
+            //             case Options.Engine:
+            //                 item = new Engine(weight[i], typeEngine[]);
+            //                 break;
+            //             case Options.HpRegenerator:
+            //                 break;
+            //             case Options.Shield:
+            //                 break;
+            //         }
+            //         tempItems.Add(item);
+            //     }
+            //     shipItems.Add(tempItems);
+            // }
         }
         
-        private void ChangeSizeInternalArray(int size)
-        {
-            for (var i = 0; i < gameManager.numberOfSlots; i++) {
-                option[i] = new options[size];
-                gunType[i] = new Gun.GunType[size];
-                boostType[i] = new Bullet.TypeOfBoost[size];
-                shellsType[i] = new Bullet.TypeOfShells[size];
-                typeShield[i] = new Shield.TypeShield[size];
-                typeHpRegenerator[i] = new HpRegenerator.TypeHpRegenerator[size];
-                typeEngine[i] = new Engine.TypeEngine[size];
-            }
-        }
+        private TR InvokeMethodByTypeAndName<TR>(Type t, string method, object obj = null, params object[] parameters)
+            => (TR) t.GetMethod(method)?.Invoke(obj, parameters);
     }
 }

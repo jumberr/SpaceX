@@ -154,14 +154,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minHealth: 0
   maxHealth: 100
-  numberOfSlots: 0
-  slotType: 00000000000000000000000000000000
-  typeItem: 00000000000000000000000000000000
-  weight:
-  - 0
-  - 0
-  - 0
-  - 0
+  numberOfSlots: 2
 --- !u!4 &207433686
 Transform:
   m_ObjectHideFlags: 0
